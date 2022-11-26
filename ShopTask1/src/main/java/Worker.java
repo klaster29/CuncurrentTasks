@@ -3,11 +3,13 @@ import java.util.concurrent.Semaphore;
 
 public class Worker implements Runnable{
 
-    public static int COUNTER = 0;
-    final List<Client> clientList;
-    Semaphore semaphore;
-    private static final int MAXCLIENTSQUANTITY = 30;
-    private static final int LASTCLIENTINQUEUE = 27;
+    private static int COUNTER = 0;
+    private final List<Client> clientList;
+    private final Semaphore semaphore;
+    private static final int MAX_CLIENTS_QUANTITY = 31;
+    private static final int FIRST_CLIENT_IN_QUEUE = 0;
+    private static final int SERVE_CLIENT_TIME = 2000;
+    private static final int WAITING_CLIENT_TIME = 1000;
 
     public Worker(List<Client> clientList, Semaphore semaphore) {
         this.clientList = clientList;
@@ -20,25 +22,23 @@ public class Worker implements Runnable{
         while (true) {
             if (!clientList.isEmpty()) {
                 try {
+                    if (COUNTER == MAX_CLIENTS_QUANTITY) {
+                        clientList.clear();
+                        System.out.println("Рабочий день закончен");
+                        return;
+                    }
                     semaphore.acquire();
                     System.out.println("Обслуживаем клиента номер " + ++COUNTER);
-                    clientList.get(0).setIsSleep(false);
-                    clientList.remove(0);
+                    clientList.get(FIRST_CLIENT_IN_QUEUE).setIsSleep(false);
+                    clientList.remove(FIRST_CLIENT_IN_QUEUE);
                     semaphore.release();
-                    Thread.sleep(2000);
+                    Thread.sleep(SERVE_CLIENT_TIME);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
-            if (COUNTER == MAXCLIENTSQUANTITY) {
-                clientList.clear();
-                System.out.println("Рабочий день закончен");
-            }
-            if (COUNTER > LASTCLIENTINQUEUE) {
-                return;
-            }
             try {
-                Thread.sleep(1000);
+                Thread.sleep(WAITING_CLIENT_TIME);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
