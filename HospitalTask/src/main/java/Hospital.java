@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class Hospital {
 
@@ -15,6 +16,10 @@ public class Hospital {
     private final ExecutorService therapist;
     private final ExecutorService dentist;
     private final ExecutorService clients;
+
+    private static final Long HOURS_IN_DAY = 24L;
+    private static final Long WAITING_TERMINATION = 1000L;
+
 
     public Hospital() {
         surgeonList = new ArrayList<>();
@@ -34,12 +39,24 @@ public class Hospital {
         clientComing();
     }
 
-    public void shutdownAllExecutors() {
+    public void endOfTheWorkingDay() {
         doctors.shutdown();
         surgeon.shutdown();
         therapist.shutdown();
         dentist.shutdown();
         clients.shutdown();
+        try {
+            while (!(doctors.awaitTermination(HOURS_IN_DAY, TimeUnit.HOURS) &&
+                            surgeon.awaitTermination(HOURS_IN_DAY, TimeUnit.HOURS) &&
+                            therapist.awaitTermination(HOURS_IN_DAY, TimeUnit.HOURS) &&
+                            dentist.awaitTermination(HOURS_IN_DAY, TimeUnit.HOURS) &&
+                            clients.awaitTermination(HOURS_IN_DAY, TimeUnit.HOURS))) {
+                Thread.sleep(WAITING_TERMINATION);
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Госпиталь закрывается");
     }
 
     private void startDoctorsJob() {
