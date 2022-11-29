@@ -18,7 +18,7 @@ public class ReleaseWorker implements Runnable{
 
     @Override
     public void run() {
-        while (counter <= maxClients) {
+        while (counter < maxClients) {
             if (!rooms.isEmpty()) {
                 ++counter;
                 System.out.println("Отель покинул клиент " + rooms.get(firstClientToRelease));

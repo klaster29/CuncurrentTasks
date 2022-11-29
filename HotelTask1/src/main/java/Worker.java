@@ -20,7 +20,7 @@ public class Worker implements Runnable{
 
     @Override
     public void run() {
-        while (COUNTER <= MAX_CLIENTS_QUANTITY) {
+        while (COUNTER < MAX_CLIENTS_QUANTITY) {
             try {
                 semaphore.acquire();
                 if (!clients.isEmpty()) {
